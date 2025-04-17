@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cheese Pizza Menu</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<h1>Our Pizzas</h1>
+<div class="pizza-grid">
+    <div th:each="pizza : ${pizzas}" class="pizza-card">
+        <h3 th:text="${pizza.name}"></h3>
+        <p th:text="${pizza.description}"></p>
+        <span th:text="'$'+${pizza.basePrice}"></span>
+        <a th:href="@{/order/add/{id}(id=${pizza.id})}">Add to Cart</a>
+    </div>
+</div>
+
+</body>
+</html>

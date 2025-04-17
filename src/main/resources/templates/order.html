@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order</title>
+</head>
+<body>
+<form th:action="@{/order/submit}" th:object="${order}" method="post">
+    <input th:field="*{customerName}" placeholder="Name">
+    <input th:field="*{deliveryAddress}" placeholder="Address">
+
+    <div th:each="item : ${cart.items}">
+        <span th:text="${item.pizza.name}"></span>
+        <span th:text="${item.quantity}"></span>
+    </div>
+
+    <button type="submit">Place Order</button>
+</form>
+
+</body>
+</html>
