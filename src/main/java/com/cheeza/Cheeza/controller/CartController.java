@@ -27,11 +27,16 @@ public class CartController {
     }
     @GetMapping
     public String viewCart(Model model){
-        model.addAttribute("cartItems", cartService.getOrderItem());
-        model.addAttribute("total", cartService.getOrderItems().stream()
+        model.addAttribute("cartItems", cartService.getCartItems());
+        model.addAttribute("total", cartService.getCartItems().stream()
                 .mapToDouble(item -> item.getPizza().getBasePrice() * item.getQuantity())
                 .sum());
         return "cart";
 
+    }
+
+    @PostMapping("/checkout")
+    public String checkout() {
+        return "redirect:/orders";  // Goes to order form
     }
 }

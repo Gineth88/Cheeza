@@ -80,4 +80,22 @@ public class OrderService {
                 .map(cartItem -> new OrderItem(cartItem.getPizza(), cartItem.getQuantity()))
                 .collect(Collectors.toList());
     }
+    public Order createOrderFromCart(OrderRequest request){
+        List<OrderItem> items = convertCartItems();
+
+
+        Order order = new Order();
+        order.setCustomerName(request.getCustomerName());
+        order.setDeliveryAddress(request.getDeliveryAddress());
+        order.setPhone(request.getPhone());
+        order.setEmail(request.getEmail());
+        order.setStatus(OrderStatus.RECEIVED);
+        order.setOrderTime(LocalDateTime.now());
+        order.setItems(items);
+
+        order.setTotalPrice(cartService.getTotal());
+        Order saveOrder = orderRepository.save(order);
+        cartService.clearCart();
+        return saveOrder;
+    }
 }

@@ -9,10 +9,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/order")
+@RequestMapping("/api/orders")
 public class OrderController {
     @Autowired
     private OrderService orderService;
+
 
     @PostMapping
     public Order createOrder(@RequestBody OrderRequest request){
@@ -29,9 +30,10 @@ public class OrderController {
         return "order";
     }
 
-//    @PostMapping
-//    public String submitOrder(@ModelAttribute OrderRequest orderRequest) {
-//        orderService.createOrderFromCart(orderRequest);
-//        return "redirect:/order/success";
-//    }
+
+    @PostMapping("/submit")
+    public String submitOrder(@ModelAttribute OrderRequest orderRequest) {
+        orderService.createOrderFromCart(orderRequest);
+        return "redirect:/order/success";
+    }
 }
