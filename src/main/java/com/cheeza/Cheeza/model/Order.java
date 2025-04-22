@@ -31,4 +31,8 @@ public class Order {
     private OrderStatus status;
 
     private LocalDateTime orderTime;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")  // Creates foreign key in orders table
+    private User user;
 }

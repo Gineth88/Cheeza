@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+</head>
+<body>
+<form th:action="@{/profile}" th:object="${user}" method="post">
+    <input type="text" th:field="*{fullName}">
+    <input type="tel" th:field="*{phone}">
+    <textarea th:field="*{address}"></textarea>
+    <button type="submit">Save</button>
+</form>
+</body>
+</html>
