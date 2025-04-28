@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="pizza-form">
+  <h2>Create New Pizza</h2>
+  <form th:action="@{/admin/menu/pizzas}" th:object="${pizza}" method="post">
+    <!-- Form fields with creative styling -->
+    <div class="form-group floating">
+      <input type="text" th:field="*{name}" required>
+      <label>Pizza Name</label>
+    </div>
+
+    <div class="toppings-selector">
+      <h3>Available Toppings</h3>
+      <div class="toppings-grid">
+        <div th:each="topping : ${allToppings}" class="topping-option">
+          <input type="checkbox"
+                 th:id="${'topping-' + topping.id}"
+                 th:value="${topping.id}">
+          <label th:for="${'topping-' + topping.id}">
+            <i th:class="${topping.iconClass}"></i>
+            <span th:text="${topping.name}"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit">Create Pizza</button>
+  </form>
+</div>
+</body>
+</html>

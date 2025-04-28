@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Cheeza Pizza</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        .profile-icon {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .profile-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .admin-badge {
+            background: #ffd700;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 th:text="${welcomeMessage}">Welcome to Cheeza Pizza!</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/menu">Menu</a>
+            <a href="/auth/login">Login</a>
+            <a href="/auth/register">Register</a>
+        </nav>
+        <div class="profile-section" sec:authorize="isAuthenticated()">
+            <a href="/auth/profile" class="profile-icon">
+                <svg><!-- Profile icon SVG --></svg>
+                <span sec:authentication="name"></span>
+                <span sec:authorize="hasRole('ADMIN')" class="admin-badge">ADMIN</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>Freshly Baked Pizzas</h2>
+            <p class="special" th:text="${featuredSpecial}">Today's Special: Margherita Pizza - $9.99</p>
+            <a href="/menu" class="btn">Order Now</a>
+        </section>
+
+        <section class="features">
+            <div class="feature">
+                <h3>Fast Delivery</h3>
+                <p>Get your pizza in 30 minutes or it's free!</p>
+            </div>
+            <div class="feature">
+                <h3>Quality Ingredients</h3>
+                <p>100% organic and locally sourced</p>
+            </div>
+            <div class="feature">
+                <h3>Custom Pizzas</h3>
+                <p>Build your own pizza with our toppings</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Cheeza Pizza. All rights reserved.</p>
+    </footer>
+</body>
+</html>

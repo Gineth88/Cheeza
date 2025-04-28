@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Tracking</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+</head>
+<body>
+<div class="container">
+    <h2>Order #<span th:text="${order.id}"></span></h2>
+
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div id="order-progress" class="progress"></div>
+        </div>
+        <div class="status-milestones">
+                <span th:each="status : ${T(com.cheeza.Cheeza.model.OrderStatus).values()}"
+                      th:text="${status}"
+                      th:classappend="${order.status.ordinal() >= status.ordinal()}? 'completed' : ''">
+                </span>
+        </div>
+    </div>
+
+    <div class="status-updates">
+        <p>Current Status: <strong id="order-status" th:text="${order.status}"></strong></p>
+        <p>Last Updated: <span id="last-updated" th:text="${#temporals.format(order.lastUpdated, 'dd/MM/yyyy HH:mm')}"></span></p>
+        <p>Estimated Delivery: <span id="est-delivery" th:text="${#temporals.format(order.estimatedDelivery, 'dd/MM/yyyy HH:mm')}"></span></p>
+    </div>
+</div>
+
+<!-- WebSocket Libraries -->
+<script th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
+<script th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
+<script th:src="@{/js/order-tracking.js}"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const orderId = [[${order.id}]];
+    const initialStatus = [[${order.status}]];
+    /*]]>*/
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize progress with current status
+        updateProgressUI(initialStatus);
+
+        // Connect to WebSocket
+        connectToOrderUpdates(orderId);
+    });
+</script>
+</body>
+</html>

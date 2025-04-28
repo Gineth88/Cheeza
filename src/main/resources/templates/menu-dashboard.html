@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Menu Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body class="admin-dashboard">
+<div class="sidebar">
+    <h2>Cheeza Admin</h2>
+    <nav>
+        <a href="/admin/menu" class="active">Menu</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/users">Users</a>
+    </nav>
+</div>
+
+<main class="content">
+    <div class="card-grid">
+        <!-- Pizza Cards -->
+        <div class="card" th:each="pizza : ${pizzas}">
+            <img th:src="${pizza.imageUrl}" alt="Pizza image" class="card-image">
+            <div class="card-body">
+                <h3 th:text="${pizza.name}"></h3>
+                <p th:text="${pizza.description}"></p>
+                <div class="price" th:text="'$' + ${#numbers.formatDecimal(pizza.basePrice, 1, 2)}"></div>
+                <div class="card-actions">
+                    <a th:href="@{/admin/menu/pizzas/{id}/edit(id=${pizza.id})}"
+                       class="btn-edit">✏️ Edit</a>
+                    <form th:action="@{/admin/menu/pizzas/{id}(id=${pizza.id})}"
+                          method="post"
+                          onsubmit="return confirm('Delete this pizza?')">
+                        <input type="hidden" name="_method" value="delete">
+                        <button type="submit" class="btn-delete">🗑️ Delete</button>
+                    </form>
+                </div>
+            </div>
+            <div th:if="${pizza.featured}" class="featured-badge">⭐ Featured</div>
+        </div>
+
+        <!-- Add New Card -->
+        <div class="card add-new">
+            <a href="/admin/menu/pizzas/new">
+                <span>+</span>
+                <p>Add New Pizza</p>
+            </a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

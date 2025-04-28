@@ -7,3 +7,133 @@
     border: 1px solid #ddd;
     padding: 10px;
 }
+
+<!---order-tracking-->
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+.progress-container {
+    margin: 30px 0;
+}
+
+.progress-bar {
+    height: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.5s ease;
+}
+
+.status-milestones {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-top: 25px;
+}
+
+.status-milestones span {
+    position: relative;
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    padding-top: 20px;
+    flex: 1;
+}
+
+.status-milestones span.completed {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.status-milestones span::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ddd;
+    border: 2px solid #fff;
+}
+
+.status-milestones span.completed::before {
+    background-color: #4CAF50;
+}
+
+.status-updates {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+.status-updates p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+body{
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+header{
+    background: #e74c3c;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+nav a{
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+.hero{
+    background: url('/images/pizza-hero.jpg') no-repeat center center;
+    background-size: cover;
+    color: white;
+    text-align: center;
+    padding: 1rem 4rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
+
+.features{
+    display: flex;
+    justify-content: space-around;
+    padding: 2rem;
+    flex-wrap: wrap;
+}
+
+.feature {
+    flex: 1;
+    min-width: 200px;
+    margin: 1rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+}

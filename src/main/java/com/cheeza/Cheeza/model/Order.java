@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,4 +36,9 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")  // Creates foreign key in orders table
     private User user;
+
+    private Instant lastUpdated;
+    private Instant estimatedDelivery;
+
+
 }

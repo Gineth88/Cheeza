@@ -2,6 +2,7 @@ package com.cheeza.Cheeza.service;
 
 import com.cheeza.Cheeza.dto.RegisterRequest;
 import com.cheeza.Cheeza.exception.EmailExistsException;
+import com.cheeza.Cheeza.exception.UserNotFoundException;
 import com.cheeza.Cheeza.model.Role;
 import com.cheeza.Cheeza.model.User;
 import com.cheeza.Cheeza.repository.UserRepository;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,15 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
 //    public User updateUser(String email, User updatedUser) {

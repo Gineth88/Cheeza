@@ -3,6 +3,7 @@ package com.cheeza.Cheeza.model;
 import jakarta.persistence.*;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +27,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role; // user/admin
 
-//    @OneToMany(mappedBy = "user")
-//    private List<Order> orders;
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate(){
+        createdAt = LocalDateTime.now();
+    }
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();  // Initialize collection
@@ -75,7 +82,11 @@ public class User {
         return orders;
     }
 
-//    public User updateDetails(String fullName, String phone, String address) {
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    //    public User updateDetails(String fullName, String phone, String address) {
 //        return new User.Builder(this.email, this.password)
 //                .fullName(fullName != null ? fullName : this.fullName)
 //                .phone(phone != null ? phone : this.phone)
@@ -83,6 +94,10 @@ public class User {
 //                .role(this.role)
 //                .build();
 //    }
+    //No Arg Constructor
+    protected User(){
+
+    }
 
     private User(Builder builder) {
         this.email = builder.email;
@@ -91,6 +106,7 @@ public class User {
         this.phone = builder.phone;
         this.address = builder.address;
         this.role = builder.role;
+    
     }
 
     public static class Builder{
@@ -100,12 +116,14 @@ public class User {
         private String phone;
         private String address;
         private Role role;
+        private LocalDateTime createdAt;
 
         public Builder(String email,String password){
             this.email = email;
             this.password = password;
             this.role = Role.CUSTOMER;
         }
+
 
         public Builder fullName(String fullName) {
             this.fullName = fullName;
@@ -123,11 +141,19 @@ public class User {
             this.role = role;
             return this;
         }
+        public Builder createdAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
 
         public User build(){
-            return new User(this);
+            User user = new User(this);
+            user.createdAt = this.createdAt != null ? this.createdAt : LocalDateTime.now();
+            return user;
         }
     }
+
+
 
 
 }

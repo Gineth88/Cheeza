@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final UserDetailsService userDetailsService;
+    // private final UserDetailsService userDetailsService;
 
     // Remove PasswordEncoder from constructor and define separately
     @Bean
@@ -28,22 +28,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider());
-
+            .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/auth/userlist").hasRole("ADMIN")
+            .requestMatchers("/profile").authenticated()
+                .requestMatchers(
+                    "/",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/auth/register",
+                    "/menu"
+                ).permitAll()
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/auth/login")
+                .permitAll()
+                .defaultSuccessUrl("/", true)
+            )
+            .logout(logout -> logout
+                .permitAll()
+                .logoutSuccessUrl("/")
+            );
+        
         return http.build();
     }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder()); // Call the method directly
-        return authProvider;
-    }
+
+    // @Bean
+    // public DaoAuthenticationProvider authenticationProvider() {
+    //     DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    //     authProvider.setUserDetailsService(userDetailsService);
+    //     authProvider.setPasswordEncoder(passwordEncoder()); // Call the method directly
+    //     return authProvider;
+    // }
 }

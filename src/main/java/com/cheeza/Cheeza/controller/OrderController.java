@@ -36,4 +36,11 @@ public class OrderController {
         orderService.createOrderFromCart(orderRequest);
         return "redirect:/order/success";
     }
+
+    @GetMapping("/track/{orderId}")
+    public String trackOrder(@PathVariable Long orderId, Model model) {
+        OrderResponse order = orderService.getOrder(orderId);
+        model.addAttribute("order", order);
+        return "order-tracking";
+    }
 }
