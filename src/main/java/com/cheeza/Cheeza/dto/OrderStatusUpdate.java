@@ -8,5 +8,5 @@ public record OrderStatusUpdate(
         Long orderId,
         OrderStatus status,
         Instant lastUpdated,
-        Instant estimatedDelivery
+        java.time.LocalDateTime estimatedDelivery
 ) {}

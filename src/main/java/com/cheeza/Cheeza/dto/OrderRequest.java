@@ -9,6 +9,9 @@ import java.util.List;
 
 @Data
 public class OrderRequest {
+    private Long userId;
+    private List<OrderItemRequest> items;
+
     @NotBlank(message = "Name is required")
     private String customerName;
 
@@ -20,6 +23,6 @@ public class OrderRequest {
 
     @Email(message = "Invalid email format")
     private String email;
-    private List<OrderItemRequest> items;
+//    private List<OrderItemRequest> items;
 }
 

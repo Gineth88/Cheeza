@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class pizzaServiceImpl implements PizzaService{
+public class PizzaServiceImpl implements PizzaService{
     private final PizzaRepository pizzaRepository;
 
-    public pizzaServiceImpl(PizzaRepository pizzaRepository) {
+    public PizzaServiceImpl(PizzaRepository pizzaRepository) {
         this.pizzaRepository = pizzaRepository;
     }
 

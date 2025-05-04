@@ -1,11 +1,12 @@
 package com.cheeza.Cheeza.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.HashSet;
@@ -28,20 +29,28 @@ public class Pizza {
     private double basePrice;
     private String size; // S,M,L,XL
 
-    public Pizza(String name, String description, double basePrice,
-                  List<String> toppings) {
+    private String imageFileName; // For creative UI
+    private boolean featured;
+    private boolean available;
+
+    @Transient
+    private MultipartFile imageFile;
+
+
+    public Pizza(String name, String description, double basePrice, Set<Topping> availableToppings) {
         this.name = name;
         this.description = description;
         this.basePrice = basePrice;
         this.size = "M";
         this.available = true;
-        this.toppings = toppings;
+        this.availableToppings = availableToppings;
+
+    }
+    public Pizza(String name, String description, double basePrice) {
+        this(name, description, basePrice, new HashSet<>());
     }
 
-    private boolean available;
 
-    @ElementCollection
-    private List<String>toppings;
 
     @ManyToMany
     @JoinTable(
@@ -51,13 +60,16 @@ public class Pizza {
     )
     private Set<Topping> availableToppings = new HashSet<>();
 
-    private String imageUrl; // For creative UI
-    private boolean featured;
 
     @PrePersist
     protected void onCreate() {
         if (this.availableToppings == null) {
             this.availableToppings = new HashSet<>();
         }
+    }
+
+    @JsonIgnore
+    public MultipartFile getImageFile() {
+        return imageFile;
     }
 }

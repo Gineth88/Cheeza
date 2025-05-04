@@ -2,13 +2,51 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Register</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
 </head>
 <body>
-    <form th:action="@{/auth/register}" th:object="${registerRequest}" method="post">
-        <input type="email" th:field="*{email}" required>
-        <input type="password" th:field="*{password}" required>
-        <div th:if="${error}" th:text="${error}" style="color: red"></div>
-        <button type="submit">Register</button>
-    </form>
+<div class="auth-container">
+    <div class="auth-form-container">
+        <div class="auth-header">
+            <h1>Create Account</h1>
+            <p>Join our pizza community</p>
+        </div>
+<!-- Error Messages -->
+<!--        <div th:if="${#fields.hasAnyErrors()}" class="auth-error">-->
+<!--            <p th:each="err : ${#fields.hasErrors()}" th:text="${err}"></p>-->
+<!--        </div>-->
+        <div th:if="${error}" class="auth-error" th:text="${error}"></div>
+
+        <form th:action="@{/auth/register}" th:object="${registerRequest}" method="post">
+            <!---- full name field---->
+            <div class="auth-form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" th:field="*{fullName}" 
+                       required placeholder="Your full name">
+                <small th:if="${#fields.hasErrors('fullName')}" 
+                       th:errors="*{fullName}" class="text-danger"></small>
+            </div>
+
+            <div class="auth-form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" th:field="*{email}" required placeholder="your@email.com">
+                <small class="text-danger" th:if="${#fields.hasErrors('email')}"
+                       th:errors="*{email}">Email error</small>
+            </div>
+
+            <div class="auth-form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" th:field="*{password}"
+                       required placeholder="Create a password">
+                <small class="text-danger" th:if="${#fields.hasErrors('password')}"
+                       th:errors="*{password}">Password error</small>
+            </div>
+
+            <button type="submit" class="auth-btn">Register</button>
+        </form>
+
+        <a th:href="@{/auth/login}" class="auth-link">Already have an account? Sign in</a>
+    </div>
+</div>
 </body>
 </html>

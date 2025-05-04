@@ -3,17 +3,29 @@ package com.cheeza.Cheeza.controller;
 import com.cheeza.Cheeza.dto.OrderRequest;
 import com.cheeza.Cheeza.dto.OrderResponse;
 import com.cheeza.Cheeza.model.Order;
+import com.cheeza.Cheeza.model.OrderItem;
+import com.cheeza.Cheeza.model.OrderStatus;
+import com.cheeza.Cheeza.model.User;
 import com.cheeza.Cheeza.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
     @Autowired
-    private OrderService orderService;
+    private final OrderService orderService;
 
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     @PostMapping
     public Order createOrder(@RequestBody OrderRequest request){
@@ -42,5 +54,25 @@ public class OrderController {
         OrderResponse order = orderService.getOrder(orderId);
         model.addAttribute("order", order);
         return "order-tracking";
+    }
+
+    @PostMapping("/place")
+    public ResponseEntity<Order> placeOrder(
+            @AuthenticationPrincipal User user,
+            @RequestBody List<OrderItem> items
+    ) {
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+        Order order = orderService.placeOrder(user.getId(), items);
+        return ResponseEntity.ok(order);
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<Order> updateOrderStatus(@PathVariable Long orderId,
+                                                   @RequestParam OrderStatus status){
+        orderService.updateOrderStatus(orderId,status);
+        return ResponseEntity.ok().build();
     }
 }

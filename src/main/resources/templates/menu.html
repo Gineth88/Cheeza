@@ -1,22 +1,48 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Cheese Pizza Menu</title>
-    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <title>Cheeza Pizza Menu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .pizza-card {
+            transition: transform 0.3s;
+        }
+        .pizza-card:hover {
+            transform: translateY(-5px);
+        }
+        .featured-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
 </head>
 <body>
-<div th:replace="~{fragments/header :: header}"></div>
-<h1>Our Pizzas</h1>
-<div class="pizza-grid">
-    <div th:each="pizza : ${pizzas}" class="pizza-card">
-        <h3 th:text="${pizza.name}"></h3>
-        <p th:text="${pizza.description}"></p>
-        <span th:text="'$'+${pizza.basePrice}"></span>
-        <a th:href="@{/order/add/{id}(id=${pizza.id})}">Add to Cart</a>
+<div class="container mt-5">
+    <div th:replace="~{fragments/header::header}"></div>
+    <h1 class="mb-4">🍕 Our Pizza Menu</h1>
+    <!-- Add this inside the navigation -->
+<li class="nav-item" sec:authorize="hasRole('ADMIN')">
+    <a class="nav-link" href="/admin/pizzas/new">
+        <i class="bi bi-plus-circle"></i> Add Pizza
+    </a>
+</li>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div th:each="pizza : ${pizzas}" class="col">
+            <!-- menu.html -->
+<div class="pizza-card">
+    <img th:src="@{'/uploads/' + ${pizza.imageFileName}}" 
+         alt="Pizza image" class="pizza-image">
+    <h3 th:text="${pizza.name}"></h3>
+    <p th:text="${pizza.description}"></p>
+    <p th:text="'$' + ${#numbers.formatDecimal(pizza.price, 1, 2)}"></p>
+</div>
+        </div>
     </div>
 </div>
-
 </body>
 </html>

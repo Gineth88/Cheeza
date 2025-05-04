@@ -23,6 +23,9 @@ public class Order {
     private String phone;
     private String email;
 
+    private LocalDateTime orderTime;
+    private LocalDateTime estimatedDelivery;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items;
 
@@ -31,14 +34,14 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    private LocalDateTime orderTime;
+//    private LocalDateTime orderTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")  // Creates foreign key in orders table
     private User user;
 
     private Instant lastUpdated;
-    private Instant estimatedDelivery;
+//    private Instant estimatedDelivery;
 
 
 }

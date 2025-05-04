@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,7 +21,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void registerUser(RegisterRequest request) {
+    @Transactional
+    public User registerUser(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new EmailExistsException(request.getEmail());
         }
@@ -33,7 +35,8 @@ public class UserService {
                 .role(Role.CUSTOMER)
                 .build();
 
-        userRepository.save(user);
+       return userRepository.save(user);
+
     }
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -48,6 +51,11 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
 
 //    public User updateUser(String email, User updatedUser) {
 //        User existingUser = userRepository.findByEmail(email)

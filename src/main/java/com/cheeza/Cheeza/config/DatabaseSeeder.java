@@ -58,30 +58,5 @@ public class DatabaseSeeder {
         };
     }
 
-    @Configuration
-    public class DataInitializer {
 
-        @Bean
-        CommandLineRunner initDatabase(PizzaRepository pizzaRepo, ToppingRepository toppingRepo) {
-            return args -> {
-                // Clear existing data
-                pizzaRepo.deleteAll();
-                toppingRepo.deleteAll();
-
-                // Create toppings
-                Topping cheese = toppingRepo.save(new Topping(7L,"Cheese", 1.50, true, "fa-cheese"));
-                Topping pepperoni = toppingRepo.save(new Topping(10L,"Pepperoni", 2.00, false, "fa-pepper-hot"));
-
-
-                // Create pizzas with toppings
-                Pizza margherita = new Pizza("Margherita", "Classic tomato and cheese", 9.99, );
-                margherita.getAvailableToppings().add(cheese);
-                pizzaRepo.save(margherita);
-
-                Pizza pepperoniPizza = new Pizza("Pepperoni", "Spicy pepperoni delight", 12.99, true);
-                pepperoniPizza.getAvailableToppings().addAll(Set.of(cheese, pepperoni));
-                pizzaRepo.save(pepperoniPizza);
-            };
-        }
-    }
 }

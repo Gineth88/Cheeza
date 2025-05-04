@@ -1,7 +1,7 @@
 package com.cheeza.Cheeza.model;
 
 import jakarta.persistence.*;
-import lombok.Setter;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
 
     private String fullName;
     private String phone;
@@ -86,14 +87,24 @@ public class User {
         return createdAt;
     }
 
-    //    public User updateDetails(String fullName, String phone, String address) {
-//        return new User.Builder(this.email, this.password)
-//                .fullName(fullName != null ? fullName : this.fullName)
-//                .phone(phone != null ? phone : this.phone)
-//                .address(address != null ? address : this.address)
-//                .role(this.role)
-//                .build();
-//    }
+    // Required for Thymeleaf binding
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void updateProfileDetails(String fullName, String phone, String address) {
+        this.fullName = fullName != null ? fullName : this.fullName;
+        this.phone = phone != null ? phone : this.phone;
+        this.address = address != null ? address : this.address;
+    }
     //No Arg Constructor
     protected User(){
 

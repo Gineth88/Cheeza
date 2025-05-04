@@ -2,20 +2,23 @@ package com.cheeza.Cheeza.service;
 
 import com.cheeza.Cheeza.dto.OrderRequest;
 import com.cheeza.Cheeza.dto.OrderResponse;
-import com.cheeza.Cheeza.model.Order;
-import com.cheeza.Cheeza.model.OrderItem;
-import com.cheeza.Cheeza.model.OrderStatus;
-import com.cheeza.Cheeza.model.Pizza;
+import com.cheeza.Cheeza.exception.OrderNotFoundException;
+import com.cheeza.Cheeza.exception.UserNotFoundException;
+import com.cheeza.Cheeza.model.*;
 import com.cheeza.Cheeza.repository.OrderRepository;
 import com.cheeza.Cheeza.repository.PizzaRepository;
+import com.cheeza.Cheeza.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class OrderService {
 
     @Autowired
@@ -26,6 +29,17 @@ public class OrderService {
 
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public OrderService(OrderRepository orderRepository,SimpMessagingTemplate messagingTemplate) {
+       this.orderRepository = orderRepository;
+        this.messagingTemplate = messagingTemplate;
+    }
 
     public Order createOrder(OrderRequest request){
         Order order = new Order();
@@ -97,5 +111,46 @@ public class OrderService {
         Order saveOrder = orderRepository.save(order);
         cartService.clearCart();
         return saveOrder;
+    }
+
+    public Order placeOrder(Long userId, List<OrderItem> items) {
+        // 1. Get the user first
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // 2. Create and save the order
+        Order order = new Order();
+        order.setUser(user); // Set the user before saving
+        order.setItems(items);
+        order.setOrderTime(LocalDateTime.now());
+        order.setStatus(OrderStatus.RECEIVED);
+        order.setEstimatedDelivery(LocalDateTime.now().plusMinutes(45));
+
+        Order savedOrder = orderRepository.save(order);
+
+        // 3. Send notification
+        sendOrderUpdate(savedOrder);
+        return savedOrder;
+    }
+
+
+
+
+    public void updateOrderStatus(Long orderId,OrderStatus newStatus){
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(()-> new OrderNotFoundException(orderId));
+
+        order.setStatus(newStatus);
+        orderRepository.save(order);
+
+        sendOrderUpdate(order);
+
+    }
+    private void sendOrderUpdate(Order order){
+        messagingTemplate.convertAndSendToUser(
+                order.getUser().getEmail(),
+                "/qeue/orders/",
+                order
+        );
     }
 }
