@@ -29,4 +29,11 @@ public class OrderItem {
         this.pizza = pizza;
         this.quantity = quantity;
     }
+
+    public OrderItem(Pizza pizza, int quantity, String specialInstructions, Order order) {
+        this.pizza = pizza;
+        this.quantity = quantity;
+        this.specialInstruction = specialInstructions;
+        this.order = order;
+    }
 }

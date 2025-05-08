@@ -1,5 +1,7 @@
 package com.cheeza.Cheeza.model;
 
+import com.cheeza.Cheeza.observer.OrderObserver;
+import com.cheeza.Cheeza.observer.OrderSubject;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,12 +10,13 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "pizza_orders")
 @Data
-public class Order {
+public class Order implements OrderSubject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,14 +37,32 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-//    private LocalDateTime orderTime;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")  // Creates foreign key in orders table
     private User user;
 
     private Instant lastUpdated;
-//    private Instant estimatedDelivery;
+
+    private transient List<OrderObserver> observers = new ArrayList<>();
+
+    public void setStatus(OrderStatus newStatus){
+        OrderStatus oldStatus = this.status;
+        this.status = newStatus;
+        notifyObservers(this,oldStatus);
+
+    }
+
+    @Override
+    public void registerObserver(OrderObserver observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void notifyObservers(Order order, OrderStatus oldStatus) {
+        observers.forEach(observer -> observer.update(order, oldStatus));
+    }
 
 
 }

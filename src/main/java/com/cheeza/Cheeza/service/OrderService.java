@@ -5,9 +5,13 @@ import com.cheeza.Cheeza.dto.OrderResponse;
 import com.cheeza.Cheeza.exception.OrderNotFoundException;
 import com.cheeza.Cheeza.exception.UserNotFoundException;
 import com.cheeza.Cheeza.model.*;
+import com.cheeza.Cheeza.observer.OrderObserver;
 import com.cheeza.Cheeza.repository.OrderRepository;
 import com.cheeza.Cheeza.repository.PizzaRepository;
 import com.cheeza.Cheeza.repository.UserRepository;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -19,138 +23,159 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class OrderService {
+    private final OrderRepository orderRepository;
+    private final PizzaRepository pizzaRepository;
+    private final CartService cartService;
+    private final UserRepository userRepository;
+    private final OrderObserver customerObserver;
 
-    @Autowired
-    private OrderRepository orderRepository;
+    @Autowired(required = false) // Make optional if WebSocket isn't crucial
+    private SimpMessagingTemplate messagingTemplate;
 
-    @Autowired
-    private PizzaRepository pizzaRepository;
+    public Order createOrder(OrderRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    @Autowired
-    private CartService cartService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private final SimpMessagingTemplate messagingTemplate;
-
-    public OrderService(OrderRepository orderRepository,SimpMessagingTemplate messagingTemplate) {
-       this.orderRepository = orderRepository;
-        this.messagingTemplate = messagingTemplate;
-    }
-
-    public Order createOrder(OrderRequest request){
         Order order = new Order();
+        order.setUser(user);
         order.setCustomerName(request.getCustomerName());
         order.setDeliveryAddress(request.getDeliveryAddress());
         order.setPhone(request.getPhone());
-        order.setEmail(request.getEmail());
         order.setStatus(OrderStatus.RECEIVED);
         order.setOrderTime(LocalDateTime.now());
+        order.setEstimatedDelivery(LocalDateTime.now().plusMinutes(45));
 
         List<OrderItem> items = request.getItems().stream()
                 .map(item -> {
                     Pizza pizza = pizzaRepository.findById(item.getPizzaId())
                             .orElseThrow(() -> new RuntimeException("Pizza not found"));
-
-                    OrderItem orderItem = new OrderItem();
-                    orderItem.setPizza(pizza);
-                    orderItem.setQuantity(item.getQuantity());
-                    orderItem.setSpecialInstruction(item.getSpecialInstructions());
-                    orderItem.setOrder(order); // Bidirectional relationship
-                    return orderItem;
+                    return new OrderItem(pizza, item.getQuantity(), item.getSpecialInstructions(), order);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
-                order.setItems(items);
-
-        double total = items.stream()
-                .mapToDouble(item -> item.getPizza().getBasePrice() * item.getQuantity())
-                .sum();
-        order.setTotalPrice(total);
-
-               return orderRepository.save(order);
-
-    }
-
-    public OrderResponse getOrder(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow();
-
-        return new OrderResponse(
-                order.getId(),
-                order.getCustomerName(),
-                order.getItems().stream()
-                        .map(item -> new OrderResponse.OrderItemResponse(
-                                item.getPizza().getName(),
-                                item.getQuantity()
-                        ))
-                        .collect(Collectors.toList())
-        );
-    }
-    private List<OrderItem> convertCartItems() {
-        return cartService.getCartItems().stream()
-                .map(cartItem -> new OrderItem(cartItem.getPizza(), cartItem.getQuantity()))
-                .collect(Collectors.toList());
-    }
-    public Order createOrderFromCart(OrderRequest request){
-        List<OrderItem> items = convertCartItems();
-
-
-        Order order = new Order();
-        order.setCustomerName(request.getCustomerName());
-        order.setDeliveryAddress(request.getDeliveryAddress());
-        order.setPhone(request.getPhone());
-        order.setEmail(request.getEmail());
-        order.setStatus(OrderStatus.RECEIVED);
-        order.setOrderTime(LocalDateTime.now());
         order.setItems(items);
-
-        order.setTotalPrice(cartService.getTotal());
-        Order saveOrder = orderRepository.save(order);
-        cartService.clearCart();
-        return saveOrder;
-    }
-
-    public Order placeOrder(Long userId, List<OrderItem> items) {
-        // 1. Get the user first
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-
-        // 2. Create and save the order
-        Order order = new Order();
-        order.setUser(user); // Set the user before saving
-        order.setItems(items);
-        order.setOrderTime(LocalDateTime.now());
-        order.setStatus(OrderStatus.RECEIVED);
-        order.setEstimatedDelivery(LocalDateTime.now().plusMinutes(45));
+        order.setTotalPrice(calculateTotal(items));
 
         Order savedOrder = orderRepository.save(order);
-
-        // 3. Send notification
-        sendOrderUpdate(savedOrder);
+        notifyOrderCreated(savedOrder);
         return savedOrder;
     }
 
+    private double calculateTotal(List<OrderItem> items) {
+        return items.stream()
+                .mapToDouble(item -> item.getPizza().getBasePrice() * item.getQuantity())
+                .sum();
+    }
 
+    public Order createOrderFromCart(OrderRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        List<OrderItem> items = convertCartItems();
+        double total = cartService.getTotal();
 
-    public void updateOrderStatus(Long orderId,OrderStatus newStatus){
+        Order order = new Order();
+        order.setUser(user);
+        order.setItems(items);
+        order.setTotalPrice(total);
+        order.setStatus(OrderStatus.RECEIVED);
+        order.setOrderTime(LocalDateTime.now());
+        order.setEstimatedDelivery(LocalDateTime.now().plusMinutes(45));
+
+        Order savedOrder = orderRepository.save(order);
+        cartService.clearCart();
+        notifyOrderCreated(savedOrder);
+        return savedOrder;
+    }
+
+    private List<OrderItem> convertCartItems() {
+        return cartService.getCartItems().stream()
+                .map(item -> new OrderItem(item.getPizza(), item.getQuantity()))
+                .toList();
+    }
+
+    public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(()-> new OrderNotFoundException(orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
 
+        OrderStatus oldStatus = order.getStatus();
         order.setStatus(newStatus);
         orderRepository.save(order);
 
-        sendOrderUpdate(order);
-
+        order.registerObserver(customerObserver);
+        notifyStatusChange(order, oldStatus);
     }
-    private void sendOrderUpdate(Order order){
-        messagingTemplate.convertAndSendToUser(
-                order.getUser().getEmail(),
-                "/qeue/orders/",
-                order
-        );
+
+    private void notifyOrderCreated(Order order) {
+        if (messagingTemplate != null) {
+            messagingTemplate.convertAndSendToUser(
+                    order.getUser().getEmail(),
+                    "/queue/orders",
+                    new OrderNotification(order.getId(), "Order created", OrderStatus.RECEIVED)
+            );
+        }
+    }
+
+    private void notifyStatusChange(Order order, OrderStatus oldStatus) {
+        if (messagingTemplate != null) {
+            messagingTemplate.convertAndSendToUser(
+                    order.getUser().getEmail(),
+                    "/queue/orders",
+                    new OrderNotification(order.getId(), "Status changed", order.getStatus())
+            );
+        }
+    }
+
+    public Order getOrder(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+    }
+
+    public Order placeOrder(OrderRequest request) {
+        // Get authenticated user (you may need to adjust this based on your auth setup)
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
+
+        // Convert cart items to order items
+        List<OrderItem> items = convertCartItems();
+
+        // Calculate total
+        double total = items.stream()
+                .mapToDouble(item -> item.getPizza().getBasePrice() * item.getQuantity())
+                .sum();
+
+        // Create and save order
+        Order order = new Order();
+        order.setUser(user);
+        order.setItems(items);
+        order.setTotalPrice(total);
+        order.setStatus(OrderStatus.RECEIVED);
+        order.setOrderTime(LocalDateTime.now());
+        order.setEstimatedDelivery(LocalDateTime.now().plusMinutes(45));
+
+        Order savedOrder = orderRepository.save(order);
+        cartService.clearCart();
+
+        // Send notification if needed
+        if (messagingTemplate != null) {
+            messagingTemplate.convertAndSendToUser(
+                    user.getEmail(),
+                    "/queue/orders",
+                    new OrderNotification(savedOrder.getId(), "Order placed", OrderStatus.RECEIVED)
+            );
+        }
+
+        return savedOrder;
+    }
+
+    // DTO for WebSocket messages
+    @Data
+    @AllArgsConstructor
+    private static class OrderNotification {
+        private Long orderId;
+        private String message;
+        private OrderStatus status;
     }
 }

@@ -35,6 +35,7 @@ public class UserService {
                 .role(Role.CUSTOMER)
                 .build();
 
+
        return userRepository.save(user);
 
     }

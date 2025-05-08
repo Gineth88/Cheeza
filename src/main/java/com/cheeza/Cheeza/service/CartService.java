@@ -21,23 +21,23 @@ public class CartService {
     }
 
 
-    public void addPizza(Pizza pizza, int quantity){
-        cart.compute(pizza.getId(),(id,item) ->
-
-                    item == null ?
-                            new CartItem(pizza,quantity):
-                            item.addQuantity(quantity)
-
-                );
-
-    }
+//    public void addPizza(Pizza pizza, int quantity){
+//        cart.compute(pizza.getId(),(id,item) ->
+//
+//                    item == null ?
+//                            new CartItem(pizza,quantity):
+//                            item.addQuantity(quantity)
+//
+//                );
+//
+//    }
 
     public void addToCart(Long pizzaId, int quantity) {
-        Pizza pizza = pizzaService.getPizzaById(pizzaId)
-                .orElseThrow(() -> new RuntimeException("Pizza not found"));
-        cart.merge(pizza.getId(),
-                new CartItem(pizza, quantity),
-                (existing, newItem) -> new CartItem(pizza, existing.getQuantity() + quantity)
+        Pizza pizza = pizzaService.getPizzaById(pizzaId);
+        cart.compute(pizzaId, (id, item) ->
+                item != null ?
+                        item.addQuantity(quantity) :
+                        new CartItem(pizza, quantity)
         );
     }
 

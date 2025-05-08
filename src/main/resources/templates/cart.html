@@ -5,18 +5,36 @@
     <title>Your Cart</title>
 </head>
 <body>
-<h1>Your Pizza Cart</h1>
-<table>
-    <tr th:each ="item : ${cartItems}">
-        <td th:text="${item.pizza.name}"></td>
-        <td th:text="${item.quantity}"></td>
-        <td th:text="${'LKR'+ item.pizza.basePrice * item.quantity}"></td>
-    </tr>
-</table>
-<p>Total: <span th:text="${'LKR'+ total}"></span></p>
-<form th:action="@{/order}" method="get">
-    <button type="submit">Checkout</button>
-</form>
+    div class="container mt-5">
+    <h1 class="mb-4">🛒 Your Cart</h1>
+    <div class="table-responsive">
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Pizza</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${cartItems}">
+                    <td th:text="${item.pizza.name}"></td>
+                    <td th:text="${item.quantity}"></td>
+                    <td th:text="${'LKR '+ (item.pizza.basePrice * item.quantity)}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="total-price mt-4">
+        <h4>Total: <span th:text="${'LKR '+ total}"></span></h4>
+    </div>
+    
+    <div class="checkout-actions mt-4">
+        <a href="/menu" class="btn btn-secondary">Continue Shopping</a>
+        <a href="/order" class="btn btn-primary">Proceed to Checkout</a>
+    </div>
+</div>
 
 </body>
 </html>

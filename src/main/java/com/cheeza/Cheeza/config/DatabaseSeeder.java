@@ -58,5 +58,19 @@ public class DatabaseSeeder {
         };
     }
 
+    @Bean
+    CommandLineRunner initMenu(PizzaRepository pizzaRepo, ToppingRepository toppingRepo) {
+        return args -> {
+            // Create sample pizzas with default images
+            if(pizzaRepo.count() == 0) {
+                Pizza margherita = Pizza.builder("Margherita",10.99)
+                        .imageFileName("default-margherita.jpg")
+                        .build();
+
+                pizzaRepo.save(margherita);
+            }
+        };
+    }
+
 
 }

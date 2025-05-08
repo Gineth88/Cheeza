@@ -38,7 +38,10 @@ public class User {
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Order> orders = new ArrayList<>();  // Initialize collection
+    private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 
     // Helper methods for bidirectional relationship
     public void addOrder(Order order) {
@@ -49,6 +52,16 @@ public class User {
     public void removeOrder(Order order) {
         orders.remove(order);
         order.setUser(null);
+    }
+
+    public void addNotification(Notification notification) {
+        notifications.add(notification);
+        notification.setUser(this);
+    }
+
+    public void removeNotification(Notification notification) {
+        notifications.remove(notification);
+        notification.setUser(null);
     }
 
     public Long getId() {

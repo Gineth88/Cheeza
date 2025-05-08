@@ -20,7 +20,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    @Autowired
     private final OrderService orderService;
 
     public OrderController(OrderService orderService) {
@@ -28,20 +27,15 @@ public class OrderController {
     }
 
     @PostMapping
-    public Order createOrder(@RequestBody OrderRequest request){
+    public Order createOrder(@RequestBody OrderRequest request) {
         return orderService.createOrder(request);
     }
+
     @GetMapping("/{id}")
-    public OrderResponse getOrder(@PathVariable Long id){
-        return orderService.getOrder(id);
+    public OrderResponse getOrder(@PathVariable Long id) {
+        Order order = orderService.getOrder(id);
+        return convertToResponse(order);
     }
-
-    @GetMapping
-    public String showOrderForm(Model model) {
-        model.addAttribute("orderRequest", new OrderRequest());
-        return "order";
-    }
-
 
     @PostMapping("/submit")
     public String submitOrder(@ModelAttribute OrderRequest orderRequest) {
@@ -51,7 +45,7 @@ public class OrderController {
 
     @GetMapping("/track/{orderId}")
     public String trackOrder(@PathVariable Long orderId, Model model) {
-        OrderResponse order = orderService.getOrder(orderId);
+        OrderResponse order = convertToResponse(orderService.getOrder(orderId));
         model.addAttribute("order", order);
         return "order-tracking";
     }
@@ -59,20 +53,34 @@ public class OrderController {
     @PostMapping("/place")
     public ResponseEntity<Order> placeOrder(
             @AuthenticationPrincipal User user,
-            @RequestBody List<OrderItem> items
+            @RequestBody OrderRequest orderRequest
     ) {
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
-
-        Order order = orderService.placeOrder(user.getId(), items);
-        return ResponseEntity.ok(order);
+        orderRequest.setEmail(user.getEmail());
+        return ResponseEntity.ok(orderService.placeOrder(orderRequest));
     }
 
     @PatchMapping("/{orderId}/status")
-    public ResponseEntity<Order> updateOrderStatus(@PathVariable Long orderId,
-                                                   @RequestParam OrderStatus status){
-        orderService.updateOrderStatus(orderId,status);
+    public ResponseEntity<Order> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam OrderStatus status
+    ) {
+        orderService.updateOrderStatus(orderId, status);
         return ResponseEntity.ok().build();
+    }
+
+    private OrderResponse convertToResponse(Order order) {
+        return new OrderResponse(
+                order.getId(),
+                order.getCustomerName(),
+                order.getItems().stream()
+                        .map(item -> new OrderResponse.OrderItemResponse(
+                                item.getPizza().getName(),
+                                item.getQuantity()
+                        ))
+                        .toList()
+        );
     }
 }

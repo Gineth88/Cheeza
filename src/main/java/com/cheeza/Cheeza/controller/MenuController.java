@@ -1,12 +1,11 @@
 package com.cheeza.Cheeza.controller;
 
 import com.cheeza.Cheeza.dto.OrderRequest;
-import com.cheeza.Cheeza.model.Order;
-import com.cheeza.Cheeza.model.Pizza;
 import com.cheeza.Cheeza.service.CartService;
 import com.cheeza.Cheeza.service.OrderService;
 import com.cheeza.Cheeza.service.PizzaService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,10 +17,18 @@ public class MenuController {
     private final OrderService orderService;
     private final CartService cartService;
 
+    @Autowired
     public MenuController(PizzaService pizzaService, OrderService orderService, CartService cartService) {
         this.pizzaService = pizzaService;
         this.orderService = orderService;
         this.cartService = cartService;
+    }
+    @GetMapping("/")
+    public String showHomePage(Model model){
+        model.addAttribute("featuredPizzas",
+                "sasuge pizza, devilled chicken pizza, sweet corn Pizza" +
+                        "All in at LKR1800 Order Now today only"); //pizzaService.getFeaturedPizzas()
+        return "home";
     }
 
     @GetMapping("/menu")

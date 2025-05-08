@@ -15,7 +15,6 @@ import java.util.Set;
 
 @Entity
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Pizza {
@@ -71,5 +70,53 @@ public class Pizza {
     @JsonIgnore
     public MultipartFile getImageFile() {
         return imageFile;
+    }
+
+    public static PizzaBuilder builder(String name, double basePrice){
+        return new PizzaBuilder(name,basePrice);
+
+    }
+
+    public static class PizzaBuilder{
+        private final String name;
+        private final double basePrice;
+        private String description = "";
+        private String size = "M";
+        private Set<Topping> toppings = new HashSet<>();
+        private String imageFileName;
+
+        public PizzaBuilder (String name,double basePrice){
+            this.name = name;
+            this.basePrice = basePrice;
+        }
+        public PizzaBuilder description(String description){
+            this.description = description;
+            return this;
+        }
+        public PizzaBuilder size(String size){
+            this.size = size;
+            return this;
+        }
+        public PizzaBuilder topping(Topping topping){
+            this.toppings.add(topping);
+            return this;
+        }
+        public PizzaBuilder imageFileName(String imageFileName) {
+            this.imageFileName = imageFileName;
+            return this;
+        }
+
+
+        public Pizza build(){
+            Pizza pizza = new Pizza();
+            pizza.setName(name);
+            pizza.setBasePrice(basePrice);
+            pizza.setDescription(description);
+            pizza.setSize(size);
+            pizza.setAvailableToppings(toppings);
+            pizza.setImageFileName(imageFileName);
+            pizza.setAvailable(true);
+            return pizza;
+        }
     }
 }

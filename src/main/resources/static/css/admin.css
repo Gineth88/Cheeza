@@ -1,77 +1,26 @@
-/* Vibrant Admin Theme */
-:root {
-    --primary: #ff6b6b;
-    --secondary: #4ecdc4;
-    --dark: #292f36;
-    --light: #f7fff7;
-}
-
+/* Modern Dashboard Layout */
 .admin-dashboard {
-    display: flex;
-    font-family: 'Poppins', sans-serif;
-    background-color: #f5f7fa;
-}
-
-.sidebar {
-    width: 250px;
-    background: var(--dark);
-    color: white;
-    padding: 2rem;
+    display: grid;
+    grid-template-columns: 250px 1fr;
     min-height: 100vh;
 }
 
+/* Enhanced Data Visualization */
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 2rem;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
-.card {
-    background: white;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-    position: relative;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.card-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-
-.featured-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: gold;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 0.8rem;
-}
-
-.add-new {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-}
-
-.add-new a {
+/* Better Action Buttons */
+.btn-edit {
+    background: var(--primary);
     color: white;
-    text-decoration: none;
-    text-align: center;
-    padding: 2rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
 }
 
-.add-new span {
-    font-size: 3rem;
-    display: block;
+.btn-delete {
+    background: #dc3545;
+    color: white;
 }

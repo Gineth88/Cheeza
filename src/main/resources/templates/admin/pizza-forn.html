@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizza Form</title>
+</head>
+<body>
+<!-- admin/pizza-form.html -->
+<form th:action="@{/admin/menu/pizzas}" method="post" enctype="multipart/form-data">
+    <input type="text" name="name" required>
+    <input type="number" name="basePrice" step="0.01" required>
+    <textarea name="description"></textarea>
+    <input type="file" name="imageFile" required>
+    <button type="submit">Create Pizza</button>
+</form>
+
+</body>
+</html>
