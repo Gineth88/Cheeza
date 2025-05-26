@@ -7,6 +7,7 @@ import com.cheeza.Cheeza.model.OrderItem;
 import com.cheeza.Cheeza.model.OrderStatus;
 import com.cheeza.Cheeza.model.User;
 import com.cheeza.Cheeza.service.OrderService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +39,9 @@ public class OrderController {
     }
 
     @PostMapping("/submit")
-    public String submitOrder(@ModelAttribute OrderRequest orderRequest) {
-        orderService.createOrderFromCart(orderRequest);
+    public String submitOrder(@ModelAttribute OrderRequest orderRequest,
+                              HttpSession session) {
+        orderService.createOrderFromCart(orderRequest, session);
         return "redirect:/order/success";
     }
 
@@ -53,13 +55,15 @@ public class OrderController {
     @PostMapping("/place")
     public ResponseEntity<Order> placeOrder(
             @AuthenticationPrincipal User user,
-            @RequestBody OrderRequest orderRequest
+            @RequestBody OrderRequest orderRequest,
+            HttpSession session,
+            @RequestParam(value = "paymentMethod", defaultValue = "Cash") String paymentMethod
     ) {
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
         orderRequest.setEmail(user.getEmail());
-        return ResponseEntity.ok(orderService.placeOrder(orderRequest));
+        return ResponseEntity.ok(orderService.placeOrder(orderRequest, session, paymentMethod));
     }
 
     @PatchMapping("/{orderId}/status")

@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-check-input:checked { background-color: #166b20; border-color: #166b20; }
+        .btn-primary { background: #42104a; border: none; }
+        .btn-primary:hover { background: #651276; }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container">
+    <main>
+        <div class="py-5 text-center">
+            <h2>Checkout</h2>
+            <p class="lead">Review your order and complete your payment below.</p>
+        </div>
+        <div class="row g-5">
+            <div class="col-md-5 col-lg-4 order-md-last">
+                <h4 class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-primary">Your cart</span>
+                    <span class="badge bg-primary rounded-pill" th:text="${cartItems != null ? cartItems.size() : 0}">0</span>
+                </h4>
+                <ul class="list-group mb-3">
+                    <li th:each="item : ${cartItems}" class="list-group-item d-flex justify-content-between lh-sm">
+                        <div>
+                            <h6 class="my-0" th:text="${item.pizzaName}">Product name</h6>
+                            <small class="text-muted" th:text="'x' + ${item.quantity}"></small>
+                        </div>
+                        <span class="text-muted" th:text="'LKR ' + ${item.getTotalPrice()}"></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Total (LKR)</span>
+                        <strong th:text="'LKR ' + ${totalPrice}">0</strong>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-7 col-lg-8">
+                <h4 class="mb-3">Billing details</h4>
+                <form th:action="@{/cart/checkout}" method="post" autocomplete="off" class="needs-validation" novalidate>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="firstName" class="form-label">First name</label>
+                            <input type="text" class="form-control" id="firstName" placeholder="" name="firstName" required>
+                            <div class="invalid-feedback">Valid first name is required.</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="lastName" class="form-label">Last name</label>
+                            <input type="text" class="form-control" id="lastName" placeholder="" name="lastName" required>
+                            <div class="invalid-feedback">Valid last name is required.</div>
+                        </div>
+                        <div class="col-12">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="address" placeholder="1234 Main St" name="address" required>
+                            <div class="invalid-feedback">Please enter your shipping address.</div>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="country" class="form-label">Country</label>
+                            <select class="form-select" id="country" name="country" required>
+                                <option value="">Choose...</option>
+                                <option>Sri Lanka</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a valid country.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                            <div class="invalid-feedback">Please provide a valid city.</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="zip" class="form-label">Zip</label>
+                            <input type="text" class="form-control" id="zip" name="zip" required>
+                            <div class="invalid-feedback">Zip code required.</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h4 class="mb-3">Payment</h4>
+                    <div class="my-3">
+                        <div class="form-check">
+                            <input id="credit" name="paymentMethod" type="radio" class="form-check-input" value="CreditCard" checked required>
+                            <label class="form-check-label" for="credit">Credit card</label>
+                        </div>
+                        <div class="form-check">
+                            <input id="cash" name="paymentMethod" type="radio" class="form-check-input" value="Cash" required>
+                            <label class="form-check-label" for="cash">Cash</label>
+                        </div>
+                        <div class="form-check">
+                            <input id="pixie" name="paymentMethod" type="radio" class="form-check-input" value="PixieWallet" required>
+                            <label class="form-check-label" for="pixie">PixieWallet</label>
+                        </div>
+                    </div>
+                    <div id="creditCardFields" style="display:block;">
+                        <div class="row gy-3">
+                            <div class="col-md-6">
+                                <label for="cardName" class="form-label">Name on card</label>
+                                <input type="text" class="form-control" id="cardName" name="cardName" required>
+                                <small class="text-muted">Full name as displayed on card</small>
+                                <div class="invalid-feedback">Name on card is required</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cardNumber" class="form-label">Credit card number</label>
+                                <input type="text" class="form-control" id="cardNumber" name="cardNumber" required>
+                                <div class="invalid-feedback">Credit card number is required</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="expiry" class="form-label">Expiration</label>
+                                <input type="text" class="form-control" id="expiry" name="expiry" placeholder="MM/YY" required>
+                                <div class="invalid-feedback">Expiration date required</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="cvv" class="form-label">CVV</label>
+                                <input type="text" class="form-control" id="cvv" name="cvv" required>
+                                <div class="invalid-feedback">Security code required</div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <button class="w-100 btn btn-primary btn-lg" type="submit">Place Order</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">&copy; Cheeza Pizza 2024</p>
+    </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.2/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.3/lib/stomp.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const connectWebSocket = () => {
+        const socket = new SockJS('/ws');
+        const stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function(frame) {
+            console.log('WebSocket Connected');
+
+            // Notifications subscription
+            stompClient.subscribe('/user/queue/notifications', function(message) {
+                const notification = JSON.parse(message.body);
+                showNotificationToast(notification);
+                updateNotificationBadge();
+            });
+
+            // Order updates subscription
+            stompClient.subscribe('/user/queue/orders', function(message) {
+                const update = JSON.parse(message.body);
+                showOrderUpdate(update);
+            });
+        }, function(error) {
+            console.error('WebSocket Error:', error);
+            setTimeout(connectWebSocket, 5000);
+        });
+    };
+
+    function showNotificationToast(notification) {
+        const toastHtml = `
+            <div class="toast show position-fixed bottom-0 end-0 m-3" role="alert">
+                <div class="toast-header">
+                    <strong class="me-auto">${notification.title}</strong>
+                    <small>${new Date(notification.createdAt).toLocaleTimeString()}</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">${notification.message}</div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+    }
+
+    function updateNotificationBadge() {
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            const currentCount = parseInt(badge.textContent) || 0;
+            badge.textContent = currentCount + 1;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', connectWebSocket);
+    /*]]>*/
+</script>
+<script>
+    // Simple payment method toggle.
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('input[name="paymentMethod"]').forEach((el) => {
+            el.addEventListener("change", function() {
+                document.getElementById("creditCardFields").style.display =
+                    (this.value === "CreditCard") ? "block" : "none";
+            });
+        });
+    });
+    // Bootstrap validation
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false)
+        });
+    })()
+</script>
+</body>
+</html>

@@ -1,6 +1,5 @@
 package com.cheeza.Cheeza.dto;
 
-import com.cheeza.Cheeza.model.OrderItem;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

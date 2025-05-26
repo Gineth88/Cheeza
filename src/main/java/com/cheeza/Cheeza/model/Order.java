@@ -3,10 +3,7 @@ package com.cheeza.Cheeza.model;
 import com.cheeza.Cheeza.observer.OrderObserver;
 import com.cheeza.Cheeza.observer.OrderSubject;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,6 +28,12 @@ public class Order implements OrderSubject {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items;
+
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Pizza> pizzas = new ArrayList<>();
+
+    private double deliveryFee;
+    private double discount;
 
     private Double totalPrice;
 
@@ -65,4 +68,18 @@ public class Order implements OrderSubject {
     }
 
 
+    public double calculateTotal() {
+        double subtotal = pizzas.stream()
+                .mapToDouble(Pizza::getPrice)
+                .sum();
+
+        double totalBeforeDiscount = subtotal + deliveryFee;
+
+        if (discount > 0) {
+            double discountAmount = totalBeforeDiscount * (discount / 100);
+            return totalBeforeDiscount - discountAmount;
+        }
+
+        return totalBeforeDiscount;
+    }
 }

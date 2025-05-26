@@ -1,46 +1,90 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Cheeza Pizza</title>
+    <title>Cheeza Pizza | Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/style1.css}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 <body>
-    <header class="main-header">
-        <div class="logo-container">
-            <h1 class="logo">Cheeza Pizza</h1>
-        </div>
-        
-        <nav class="main-nav">
-            <ul>
-                <li><a href="/" class="nav-btn">Home</a></li>
-                <li><a href="/menu" class="nav-btn">Menu</a></li>
-                <li sec:authorize="!isAuthenticated()"><a href="/auth/login" class="nav-btn">Login</a></li>
-                <li sec:authorize="!isAuthenticated()"><a href="/auth/register" class="nav-btn register-btn">Register</a></li>
-                <li sec:authorize="isAuthenticated()" class="profile-container">
-                    <a href="/auth/profile" class="profile-btn">
-                        <svg class="profile-icon" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                        </svg>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </header>
+<!-- Header -->
+<header class="main-header modern-header">
+    <div class="logo-container">
+        <h1 class="logo">🍕 Cheeza Pizza</h1>
+    </div>
+    <nav class="main-nav modern-nav">
+        <ul>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a href="/admin/menu" class="nav-btn">Admin</a>
+            </li>
+            <li><a href="/" class="nav-btn active-link">Home</a></li>
+            <li><a href="/menu" class="nav-btn">Menu</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/auth/login" class="nav-btn">Login</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/auth/register" class="nav-btn register-btn">Sign up</a></li>
+            <li sec:authorize="isAuthenticated()" class="profile-container">
+                <a href="/auth/profile" class="profile-btn" title="Profile">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
 
-    <main class="hero-section">
-        <div class="hero-content">
-            <h2>Authentic Italian Pizzas</h2>
-            <p class="special" th:text="${featuredSpecial}">Today's Special: Margherita Pizza - $9.99</p>
+<!-- Hero section -->
+<main>
+    <section class="hero-section-modern">
+        <div class="hero-content-modern">
+            <h2 class="headline-modern">Savor Authentic,<br>Irresistible Pizza.</h2>
+            <p class="hero-subline" th:text="${featuredSpecial}">Fired up daily with fresh, quality ingredients – experience the Cheeza difference!</p>
             <a href="/menu" class="cta-button">Order Now</a>
         </div>
-    </main>
+        <div class="hero-imagery">
+            <img src="/images/pizza-hero.jpg" alt="Pizza Image" class="pizza-hero-img" loading="lazy"/>
+        </div>
+    </section>
 
-    <footer class="main-footer">
-        <p>&copy; 2024 Cheeza Pizza. All rights reserved.</p>
-    </footer>
+    <!-- Features section -->
+    <section class="features-section">
+        <div class="feature">
+            <i class="bi bi-truck feature-icon"></i>
+            <h3>Fast Delivery</h3>
+            <p>Hot & fresh, from our oven to your door. Get your pizza in under 30 minutes!</p>
+        </div>
+        <div class="feature">
+            <i class="bi bi-people feature-icon"></i>
+            <h3>Family Friendly</h3>
+            <p>Perfect for parties, gatherings, or a cozy night in. Taste that brings everyone together.</p>
+        </div>
+        <div class="feature">
+            <i class="bi bi-star feature-icon"></i>
+            <h3>Quality Ingredients</h3>
+            <p>Only the finest: hand-picked veggies, premium meats, and artisan cheeses on every pizza.</p>
+        </div>
+    </section>
 
-    <script th:src="@{/js/main.js}"></script>
+    <!-- About/Trust Section -->
+    <section class="about-section">
+        <div class="about-content">
+            <h4>Why Cheeza?</h4>
+            <p>
+                With years of tradition and a passion for flavor, Cheeza Pizza is your trusted local pizzeria. Whether you love classics or crave custom creations, our team crafts each order to perfection. Give your tastebuds a treat!
+            </p>
+            <a href="/menu" class="secondary-btn">Browse Menu</a>
+        </div>
+        <div class="about-image">
+            <img src="/images/about-pizza.jpg" alt="About Cheeza Pizza" loading="lazy"/>
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="main-footer modern-footer">
+    <div class="footer-content">
+        <p>&copy; 2024 Cheeza Pizza • Crafted with <span style="color:#e63946;">&#10084;</span> | <a href="/menu">See Menu</a></p>
+    </div>
+</footer>
 </body>
 </html>

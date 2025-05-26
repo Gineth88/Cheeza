@@ -31,6 +31,19 @@ public class User {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private int loyaltyPoints = 0;
+
+
+
+    public void addLoyaltyPoints(int points) {
+        this.loyaltyPoints += points;
+    }
+
+    public void deductLoyaltyPoints(int points) {
+        this.loyaltyPoints = Math.max(0, this.loyaltyPoints - points);
+    }
+
     @PrePersist
     protected void onCreate(){
         createdAt = LocalDateTime.now();
@@ -41,6 +54,7 @@ public class User {
     private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt DESC")
     private List<Notification> notifications = new ArrayList<>();
 
     // Helper methods for bidirectional relationship
@@ -111,6 +125,18 @@ public class User {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public int getLoyaltyPoints() {
+        return loyaltyPoints;
+    }
+
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setLoyaltyPoints(int loyaltyPoints) {
+        this.loyaltyPoints = loyaltyPoints;
     }
 
     public void updateProfileDetails(String fullName, String phone, String address) {

@@ -1,9 +1,11 @@
 package com.cheeza.Cheeza.controller;
 
 import com.cheeza.Cheeza.dto.RegisterRequest;
+import com.cheeza.Cheeza.dto.UserRegistrationDto;
 import com.cheeza.Cheeza.exception.EmailExistsException;
 import com.cheeza.Cheeza.model.User;
 import com.cheeza.Cheeza.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -39,43 +41,58 @@ public class AuthController {
     public String showLoginForm() {
         return "auth/login";
     }
+
+    // Example controller handling a login POST:
+    @PostMapping("/login")
+    public String handleLogin(@RequestParam String email,
+                              @RequestParam String password,
+                              HttpSession session,
+                              RedirectAttributes redirectAttributes) {
+
+        User user = userService.authenticate(email, password); // your method
+        if (user != null) {
+            session.setAttribute("user", user); // <- THIS LINE IS CRUCIAL
+            return "redirect:/"; // or wherever after login
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Invalid login");
+            return "redirect:/login";
+        }
+    }
     
     //----------------
     //REGISTER ENDPOINTS
     //----------------
 
-    @GetMapping("/register") 
+    @GetMapping("/register")
     public String showRegistrationForm(Model model) {
-        model.addAttribute("registerRequest", new RegisterRequest());
-        return "auth/register"; 
+        model.addAttribute("user", new UserRegistrationDto());
+        return "auth/register";
     }
 
-     @PostMapping("/register") 
-    public String handleRegistration(
-        @Valid @ModelAttribute("registerRequest") RegisterRequest request,
-        BindingResult bindingResult,
-        Model model,
-        RedirectAttributes redirectAttributes
-    ) {
-        
-        if (bindingResult.hasErrors()) {
+    @PostMapping("/register")
+    public String registerUser(
+            @Valid @ModelAttribute("user") UserRegistrationDto registrationDto,
+            BindingResult result,
+            RedirectAttributes redirectAttributes) {
+
+        // Validate passwords match (custom validation)
+        if (!registrationDto.isPasswordsMatch()) {
+            result.rejectValue("confirmPassword", "user.confirmPassword", "Passwords must match");
+        }
+
+        if (result.hasErrors()) {
             return "auth/register";
         }
 
         try {
-            
-         User registeredUser = userService.registerUser(request);
-            redirectAttributes.addFlashAttribute("succes","Registration successful! Welcome"
-            + registeredUser.getFullName());
-            return "redirect:/auth/login?success"; // Redirect to login on success
+            userService.registerNewUser(registrationDto);
+            redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
+            return "redirect:/auth/login";
         } catch (EmailExistsException e) {
-            bindingResult.rejectValue("email", "email.exists", e.getMessage());
-            // Handle duplicate email error
-            model.addAttribute("error", "Email already registered");
+            result.rejectValue("email", "user.email", "Email already in use");
             return "auth/register";
         }
     }
-
      // Add user listing for admins
     @GetMapping("/userlist")
     public String showUserList(Model model, 
@@ -89,12 +106,7 @@ public class AuthController {
         return "auth/user-list";
     }
 
-    // Add profile endpoint
-//    @GetMapping("/profile")
-//    public String showUserProfile(@AuthenticationPrincipal User user, Model model) {
-//        model.addAttribute("user", userService.getUserById(user.getId()));
-//        return "auth/profile";
-//    }
+
 
     //---------------
     // User Profile

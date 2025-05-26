@@ -3,11 +3,9 @@ package com.cheeza.Cheeza.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,12 +26,20 @@ public class Pizza {
     private double basePrice;
     private String size; // S,M,L,XL
 
-    private String imageFileName; // For creative UI
+    private String imageFileName;
     private boolean featured;
     private boolean available;
 
     @Transient
     private MultipartFile imageFile;
+
+    private String crustType;
+    private String sauceType;
+    @ElementCollection
+    private List<String> toppings;
+    private double sizeMultiplier;
+
+    private Double calculatedPrice;
 
 
     public Pizza(String name, String description, double basePrice, Set<Topping> availableToppings) {
@@ -50,7 +56,6 @@ public class Pizza {
     }
 
 
-
     @ManyToMany
     @JoinTable(
             name = "pizza_toppings",
@@ -58,6 +63,9 @@ public class Pizza {
             inverseJoinColumns = @JoinColumn(name = "topping_id")
     )
     private Set<Topping> availableToppings = new HashSet<>();
+
+    @Transient
+    private Set<Topping> selectedToppings = new HashSet<>();
 
 
     @PrePersist
@@ -72,42 +80,70 @@ public class Pizza {
         return imageFile;
     }
 
-    public static PizzaBuilder builder(String name, double basePrice){
-        return new PizzaBuilder(name,basePrice);
 
+
+
+
+
+    public double getPrice(){
+        double toppingCost = toppings.size()*0.5;
+        return (basePrice+toppingCost)*sizeMultiplier;
     }
 
-    public static class PizzaBuilder{
-        private final String name;
-        private final double basePrice;
+
+    public static class PizzaBuilder {
+        private String name;
+        private double basePrice;
         private String description = "";
         private String size = "M";
         private Set<Topping> toppings = new HashSet<>();
         private String imageFileName;
+        private boolean available = true;
+        private String crustType = "Regular";
+        private String sauceType = "Tomato";
+        private double sizeMultiplier = 1.0;
 
-        public PizzaBuilder (String name,double basePrice){
+        public PizzaBuilder(String name, double basePrice) {
             this.name = name;
             this.basePrice = basePrice;
         }
-        public PizzaBuilder description(String description){
+
+        public PizzaBuilder description(String description) {
             this.description = description;
             return this;
         }
-        public PizzaBuilder size(String size){
+
+        public PizzaBuilder size(String size) {
             this.size = size;
             return this;
         }
-        public PizzaBuilder topping(Topping topping){
+
+        public PizzaBuilder topping(Topping topping) {
             this.toppings.add(topping);
             return this;
         }
+
         public PizzaBuilder imageFileName(String imageFileName) {
             this.imageFileName = imageFileName;
             return this;
         }
 
+        public PizzaBuilder crustType(String crustType) {
+            this.crustType = crustType;
+            return this;
+        }
 
-        public Pizza build(){
+        public PizzaBuilder sauceType(String sauceType) {
+            this.sauceType = sauceType;
+            return this;
+        }
+
+        public PizzaBuilder sizeMultiplier(double sizeMultiplier) {
+            this.sizeMultiplier = sizeMultiplier;
+            return this;
+        }
+
+        public Pizza build() {
             Pizza pizza = new Pizza();
             pizza.setName(name);
             pizza.setBasePrice(basePrice);
@@ -115,8 +151,16 @@ public class Pizza {
             pizza.setSize(size);
             pizza.setAvailableToppings(toppings);
             pizza.setImageFileName(imageFileName);
-            pizza.setAvailable(true);
+            pizza.setAvailable(available);
+            pizza.setCrustType(crustType);
+            pizza.setSauceType(sauceType);
+            pizza.setSizeMultiplier(sizeMultiplier);
             return pizza;
         }
     }
+
+    public static PizzaBuilder builder(String name, double basePrice) {
+        return new PizzaBuilder(name, basePrice);
+    }
 }
+

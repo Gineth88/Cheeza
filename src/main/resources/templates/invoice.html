@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Invoice</title>
+    <style>
+        body { font-family:sans-serif;margin:2em;}
+        .invoice { max-width: 600px; margin: auto; border:1px solid #eee; padding:2em; border-radius:10px;}
+        .success-message { color: green; margin-bottom:1em; }
+        .inv-date { float:right; color:#777; }
+        .totals { font-weight:bold; background:#f9f9f9; padding:1em;}
+        .card { color:#888; font-size:0.9em;}
+        .pizza-row { margin-bottom:7px; }
+        ul.toppinglist {margin: 0 0 6px 25px; padding:0;}
+    </style>
+</head>
+<body>
+<div class="invoice">
+    <h2>
+        Invoice
+        <span class="inv-date" th:text="${#temporals.format(invoiceDate, 'yyyy-MM-dd HH:mm')}"></span>
+    </h2>
+
+    <div th:if="${success}" class="success-message" th:text="${success}"></div>
+
+    <h3>Order Summary:</h3>
+    <div th:each="item : ${cartItems}">
+        <div class="pizza-row">
+            <span th:text="${item.pizzaName}"></span> ×
+            <span th:text="${item.quantity}"></span>
+            <div th:if="${item.selectedToppings != null && #lists.size(item.selectedToppings) > 0}">
+                <ul class="toppinglist">
+                    <li th:each="top : ${item.selectedToppings}"
+                        th:text="'+' + ${top.name} + ' (LKR ' + ${top.additionalPrice} + ')'" />
+                </ul>
+            </div>
+        </div>
+    </div>
+    <hr/>
+
+    <div class="totals">
+        Total Amount: <span style="float:right" th:text="'LKR ' + ${totalPrice}"></span>
+    </div>
+
+    <div>
+        <h4>Payment Details</h4>
+        <div>
+            Method: <span th:text="${paymentMethod}"></span>
+            <span th:if="${paymentMethod=='CreditCard'}">
+            <br/>Cardholder: <span th:text="${cardName}"></span>
+            <br/>Card: <span class="card" th:text="${maskedCardNumber}"></span>
+        </span>
+        </div>
+    </div>
+
+    <p style="margin-top:30px; color:#444;">Thank you for your order! <br/>
+        <small>Order notification has been sent to your profile.</small><br>
+        <b>You will receive live updates about your order status (Received, Preparing, Baking, Ready, Out-for-delivery, Delivered, etc.) as notifications in your <a href="/auth/profile">profile</a>!</b>
+    </p>
+</div>
+</body>
+</html>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -24,6 +25,7 @@
             padding: 2rem;
             text-align: center;
             color: white;
+            position: relative;
         }
         
         .profile-avatar {
@@ -71,70 +73,403 @@
         .info-value {
             font-weight: 500;
         }
+        
+        /* Notification styles */
+        .notification-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff4757;
+            color: white;
+            border-radius: 50%;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .notification-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 15px;
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f1f1f1;
+            cursor: pointer;
+        }
+        
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .notification-message {
+            font-size: 0.85rem;
+            color: #6c757d;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: #adb5bd;
+            margin-top: 0.25rem;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f1f1f1;
+            background-color: #f8f9fa;
+        }
+        
+        .notification-header h6 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .notification-footer {
+            text-align: center;
+            padding: 0.5rem;
+            border-top: 1px solid #f1f1f1;
+        }
+        
+        .unread {
+            background-color: #f0f7ff;
+        }
     </style>
+    <meta name="user-email" th:content="${user.email}"/>
+
 </head>
 <body>
-    <div th:replace="~{fragments/header::header}"></div>
-    
-    <main class="container profile-container">
-        <div class="profile-card">
-            <div class="profile-header">
-                <img src="https://ui-avatars.com/api/?name=John+Doe&background=e63946&color=fff" 
-                     class="profile-avatar" 
-                     alt="Profile"
-                     th:src="@{'https://ui-avatars.com/api/?name=' + ${user.fullName} + '&background=e63946&color=fff'}">
-                <h2 class="mt-3 mb-1" th:text="${user.fullName}">John Doe</h2>
-                <p class="m-0" th:text="${user.email}">john@example.com</p>
+<div th:replace="~{fragments/header::header}"></div>
+
+<main class="container profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <!-- Notification Icon -->
+            <div class="text-center mt-3">
+                <button onclick="testNotification()" class="btn btn-warning">
+                    Test Notification
+                </button>
             </div>
-            
-            <div class="p-4">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-card">
-                            <div class="card-header bg-white">
-                                <i class="bi bi-telephone me-2"></i> Contact Information
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <div class="info-label">Phone</div>
-                                    <div class="info-value" th:text="${user.phone ?: 'Not provided'}">+1 234 567 890</div>
-                                </div>
-                                <div>
-                                    <div class="info-label">Address</div>
-                                    <div class="info-value" th:text="${user.address ?: 'Not provided'}">123 Main St, City</div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="bi bi-bell-fill text-white"></i>
+                <span class="notification-badge" th:if="${not #lists.isEmpty(user.notifications)}"
+                      th:text="${#lists.size(user.notifications.?[read == false])}">0</span>
+            </div>
+
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown" id="notificationDropdown">
+                <div class="notification-header">
+                    <h6>Notifications</h6>
+                    <button class="btn btn-sm btn-link p-0" onclick="markAllAsRead()">Mark all as read</button>
+                </div>
+                <div th:if="${#lists.isEmpty(user.notifications)}" class="p-3 text-center text-muted">
+                    No notifications yet
+                </div>
+                <div th:each="notification : ${user.notifications}"
+                     th:class="${notification.read ? 'notification-item' : 'notification-item unread'}">
+                    <div class="notification-title" th:text="${notification.title}">Order Update</div>
+                    <div class="notification-message" th:text="${notification.message}">Your order has been updated</div>
+                    <div class="notification-time"
+                         th:text="${#temporals.format(notification.createdAt, 'MMM dd, yyyy - HH:mm')}">
+                        May 12, 2023 - 14:30
                     </div>
-                    
-                    <div class="col-md-6">
-                        <div class="info-card">
-                            <div class="card-header bg-white">
-                                <i class="bi bi-person-badge me-2"></i> Account Details
+                </div>
+                <div class="notification-footer">
+                    <a href="#" class="btn btn-sm btn-link">View all notifications</a>
+                </div>
+            </div>
+
+            <img src="https://ui-avatars.com/api/?name=John+Doe&background=e63946&color=fff"
+                 class="profile-avatar"
+                 alt="Profile"
+                 th:src="@{'https://ui-avatars.com/api/?name=' + ${user.fullName} + '&background=e63946&color=fff'}">
+            <h2 class="mt-3 mb-1" th:text="${user.fullName}">John Doe</h2>
+            <p class="m-0" th:text="${user.email}">john@example.com</p>
+        </div>
+
+        <div class="p-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-card">
+                        <div class="card-header bg-white">
+                            <i class="bi bi-telephone me-2"></i> Contact Information
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="info-label">Phone</div>
+                                <div class="info-value" th:text="${user.phone ?: 'Not provided'}">+1 234 567 890</div>
                             </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <div class="info-label">Member Since</div>
-                                    <div class="info-value" th:text="${#temporals.format(user.createdAt, 'MMMM d, yyyy')}">January 1, 2023</div>
-                                </div>
-                                <div>
-                                    <div class="info-label">Account Type</div>
-                                    <div class="info-value" th:text="${user.role}">CUSTOMER</div>
-                                </div>
+                            <div>
+                                <div class="info-label">Address</div>
+                                <div class="info-value" th:text="${user.address ?: 'Not provided'}">123 Main St, City</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="text-center mt-4">
-                    <a th:href="@{/auth/profile/edit}" class="btn edit-btn">
-                        <i class="bi bi-pencil-fill me-2"></i>Edit Profile
-                    </a>
+
+                <div class="col-md-6">
+                    <div class="info-card">
+                        <div class="card-header bg-white">
+                            <i class="bi bi-person-badge me-2"></i> Account Details
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="info-label">Member Since</div>
+                                <div class="info-value" th:text="${#temporals.format(user.createdAt, 'MMMM d, yyyy')}">January 1, 2023</div>
+                            </div>
+                            <div>
+                                <div class="info-label">Account Type</div>
+                                <div class="info-value" th:text="${user.role}">CUSTOMER</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="info-label">Loyalty Points</div>
+                                <div class="info-value" th:text="${user.loyaltyPoints}">0</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a th:href="@{/auth/profile/edit}" class="btn edit-btn">
+                    <i class="bi bi-pencil-fill me-2"></i>Edit Profile
+                </a>
             </div>
         </div>
-    </main>
-    
-    <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.2/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.3/lib/stomp.min.js"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    let stompClient = null;
+    const userEmail = document.querySelector('meta[name="user-email"]').content;
+
+    function connectWebSocket() {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function(frame) {
+            console.log('Connected to WebSocket');
+
+            // Subscribe to user-specific notifications
+            stompClient.subscribe('/user/queue/notifications', function(message) {
+                const notification = JSON.parse(message.body);
+                addNotificationToDropdown(notification);
+                updateNotificationBadge();
+                showToastNotification(notification);
+            });
+        }, function(error) {
+            console.error('WebSocket error:', error);
+            setTimeout(connectWebSocket, 5000);
+        });
+    }
+
+    function addNotificationToDropdown(notification) {
+        const dropdown = document.getElementById('notificationDropdown');
+        if (!dropdown) return;
+
+        const notificationList = dropdown.querySelector('.notification-header').nextElementSibling;
+        if (notificationList.querySelector('.no-notifications')) {
+            notificationList.innerHTML = '';
+        }
+
+        const notificationElement = document.createElement('div');
+        notificationElement.className = 'notification-item unread';
+        notificationElement.innerHTML = `
+            <div class="notification-title">${notification.title}</div>
+            <div class="notification-message">${notification.message}</div>
+            <div class="notification-time">${formatDateTime(notification.createdAt)}</div>
+        `;
+        notificationList.prepend(notificationElement);
+    }
+
+    function formatDateTime(dateTimeString) {
+        const date = new Date(dateTimeString);
+        return date.toLocaleString();
+    }
+
+    function showToastNotification(notification) {
+        // Implement toast notification UI if desired
+        console.log("New notification:", notification);
+    }
+
+    function updateNotificationBadge() {
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            const currentCount = parseInt(badge.textContent) || 0;
+            badge.textContent = currentCount + 1;
+            badge.style.display = 'block';
+        }
+    }
+
+    function toggleNotifications() {
+        const dropdown = document.getElementById('notificationDropdown');
+        if (dropdown.style.display === 'block') {
+            dropdown.style.display = 'none';
+        } else {
+            dropdown.style.display = 'block';
+            // Mark notifications as read when dropdown is opened
+            markNotificationsAsRead();
+        }
+    }
+
+    function markNotificationsAsRead() {
+        fetch('/api/notifications/mark-as-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                document.querySelectorAll('.notification-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                });
+                document.querySelector('.notification-badge').style.display = 'none';
+            }
+        });
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        connectWebSocket();
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notificationDropdown');
+            const icon = document.querySelector('.notification-icon');
+
+            if (dropdown.style.display === 'block' &&
+                !dropdown.contains(event.target) &&
+                !icon.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    });
+    /*]]>*/
+</script>
+<script src="/js/notification.js"></script>
+<script>
+    function testNotification() {
+        fetch('/api/test/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.text())
+        .then(console.log)
+        .catch(console.error);
+    }
+</script>
+
+
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        let stompClient = null;
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function(frame) {
+            console.log('Connected to WebSocket');
+
+            stompClient.subscribe('/user/queue/notifications', function(message) {
+                const notification = JSON.parse(message.body);
+                updateNotificationBadge();
+                addNotificationToDropdown(notification);
+                showToastNotification(notification);
+            });
+        }, function(error) {
+            console.error('WebSocket error:', error);
+        });
+
+        function updateNotificationBadge() {
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                let currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = currentCount + 1;
+                badge.style.display = 'block';
+            }
+        }
+
+        function addNotificationToDropdown(notification) {
+            const dropdown = document.getElementById('notificationDropdown');
+            if (!dropdown) return;
+            let notificationList = dropdown.querySelector('.notification-header').nextElementSibling;
+            if (notificationList.querySelector('.no-notifications')) {
+                notificationList.innerHTML = '';
+            }
+            const notificationElement = document.createElement('div');
+            notificationElement.className = 'notification-item unread';
+            notificationElement.innerHTML = `
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-message">${notification.message}</div>
+                <div class="notification-time">${formatDateTime(notification.createdAt)}</div>
+            `;
+            notificationList.prepend(notificationElement);
+        }
+
+        function formatDateTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toLocaleString();
+        }
+
+        function showToastNotification(notification) {
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed bottom-0 end-0 m-3';
+            toast.innerHTML = `
+                <div class="toast show" role="alert" style="min-width: 300px">
+                    <div class="toast-header">
+                        <strong class="me-auto">${notification.title}</strong>
+                        <small>${formatDateTime(notification.createdAt)}</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">${notification.message}</div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        // Notification dropdown toggle and mark as read logic would remain as before...
+    });
+    /*]]>*/
+</script>
+
+
+
+
+
 </body>
 </html>

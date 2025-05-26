@@ -1,13 +1,14 @@
 package com.cheeza.Cheeza.service;
 
 import com.cheeza.Cheeza.dto.RegisterRequest;
+import com.cheeza.Cheeza.dto.UserRegistrationDto;
 import com.cheeza.Cheeza.exception.EmailExistsException;
 import com.cheeza.Cheeza.exception.UserNotFoundException;
+import com.cheeza.Cheeza.model.Notification;
 import com.cheeza.Cheeza.model.Role;
 import com.cheeza.Cheeza.model.User;
 import com.cheeza.Cheeza.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,17 +59,41 @@ public class UserService {
     }
 
 
-//    public User updateUser(String email, User updatedUser) {
-//        User existingUser = userRepository.findByEmail(email)
-//                .orElseThrow();
-//
-//        // Update only allowed fields
-//        User updated = existingUser.updateDetails(
-//                updateRequest.getFullName(),
-//                updateRequest.getPhone(),
-//                updateRequest.getAddress()
-//        );
-//
-//        return userRepository.save(updated);
-//    }
-}
+
+    public void registerNewUser(UserRegistrationDto registrationDto) throws EmailExistsException {
+        if (emailExists(registrationDto.getEmail())) {
+            throw new EmailExistsException("Email already registered");
+        }
+
+        User user = new User.Builder(
+                registrationDto.getEmail(),
+                passwordEncoder.encode(registrationDto.getPassword())
+        )
+                .fullName(registrationDto.getFullName())
+                .role(Role.CUSTOMER)
+                .build();
+
+        userRepository.save(user);
+    }
+
+    private boolean emailExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    public User authenticate(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElse(null);
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+            return user;
+        }
+        return null;
+    }
+
+        @Transactional
+        public List<Notification> getUserNotifications(Long userId) {
+            User user = userRepository.findById(userId).orElseThrow();
+            // Safe: session is open, collection can be loaded
+            return user.getNotifications();
+        }
+    }
+
